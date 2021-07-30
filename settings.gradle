@@ -1,0 +1,3 @@
+include ':TextReaderLibrary'
+include ':app'
+rootProject.name = "TextReader"
