@@ -3,6 +3,8 @@ package com.yenen.ahmet.textreaderlibrary.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.nfc.tech.IsoDep;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.yenen.ahmet.textreaderlibrary.model.AdditionalPersonDetails;
@@ -52,6 +54,7 @@ public class ReadOcr {
     private final IsoDep isoDep;
     private final BACKeySpec bacKey;
     private final ReadOcrListener listener;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public ReadOcr(Context context, IsoDep isoDep, BACKeySpec bacKey, ReadOcrListener listener) {
         this.isoDep = isoDep;
@@ -66,13 +69,14 @@ public class ReadOcr {
         final AdditionalPersonDetails additionalPersonDetails = new AdditionalPersonDetails();
         final Thread thread = new Thread(() -> {
             try {
-                listener.onLoading(ReadOcrStep.START_TO_READING);
+                setLoading(ReadOcrStep.START_TO_READING);
+
                 final CardService cardService = CardService.getInstance(isoDep);
                 cardService.open();
 
                 final PassportService service = new PassportService(cardService, NORMAL_MAX_TRANCEIVE_LENGTH, DEFAULT_MAX_BLOCKSIZE, true, false);
                 sendSelectApplet(service);
-                setPersonalDetails(service, personDetails,eDocument);
+                setPersonalDetails(service, personDetails, eDocument);
                 setFaceImage(service, personDetails);
                 setFingerprint(service, personDetails);
                 setPortraitPicture(service, personDetails);
@@ -83,11 +87,11 @@ public class ReadOcr {
 
                 eDocument.setPersonDetails(personDetails);
                 eDocument.setAdditionalPersonDetails(additionalPersonDetails);
-                listener.onSuccess(eDocument);
+                handler.post(() -> listener.onSuccess(eDocument));
 
                 cardService.close();
             } catch (Exception e) {
-                listener.onFail(e);
+                handler.post(() -> listener.onFail(e));
             }
         });
         thread.start();
@@ -126,7 +130,7 @@ public class ReadOcr {
                                     final PersonDetails personDetails,
                                     final EDocument eDocument)
             throws CardServiceException, IOException {
-        listener.onLoading(ReadOcrStep.ON_DG1);
+        setLoading(ReadOcrStep.ON_DG1);
         final CardFileInputStream dg1In = service.getInputStream(PassportService.EF_DG1);
         final DG1File dg1File = new DG1File(dg1In);
 
@@ -149,7 +153,7 @@ public class ReadOcr {
     }
 
     private void setFaceImage(final PassportService service, final PersonDetails personDetails) throws CardServiceException, IOException {
-        listener.onLoading(ReadOcrStep.ON_DG2);
+        setLoading(ReadOcrStep.ON_DG2);
         final CardFileInputStream dg2In = service.getInputStream(PassportService.EF_DG2);
         final DG2File dg2File = new DG2File(dg2In);
 
@@ -169,7 +173,7 @@ public class ReadOcr {
 
     private void setFingerprint(final PassportService service, final PersonDetails personDetails) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG3);
+            setLoading(ReadOcrStep.ON_DG3);
             final CardFileInputStream dg3In = service.getInputStream(PassportService.EF_DG3);
             final DG3File dg3File = new DG3File(dg3In);
 
@@ -193,7 +197,7 @@ public class ReadOcr {
 
     private void setPortraitPicture(final PassportService service, final PersonDetails personDetails) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG5);
+            setLoading(ReadOcrStep.ON_DG5);
             final CardFileInputStream dg5In = service.getInputStream(PassportService.EF_DG5);
             final DG5File dg5File = new DG5File(dg5In);
 
@@ -211,7 +215,7 @@ public class ReadOcr {
 
     private void setSignature(final PassportService service, final PersonDetails personDetails) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG7);
+            setLoading(ReadOcrStep.ON_DG7);
             final CardFileInputStream dg7In = service.getInputStream(PassportService.EF_DG7);
             final DG7File dg7File = new DG7File(dg7In);
 
@@ -230,7 +234,7 @@ public class ReadOcr {
 
     private void setAdditionalDetails(final PassportService service, final AdditionalPersonDetails additionalPersonDetails) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG11);
+            setLoading(ReadOcrStep.ON_DG11);
             final CardFileInputStream dg11In = service.getInputStream(PassportService.EF_DG11);
             final DG11File dg11File = new DG11File(dg11In);
             if (dg11File.getLength() > 0) {
@@ -257,7 +261,7 @@ public class ReadOcr {
 
     private void setDg12(final PassportService service, final EDocument eDocument) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG12);
+            setLoading(ReadOcrStep.ON_DG12);
             final CardFileInputStream dg11In = service.getInputStream(PassportService.EF_DG12);
             final DG12File dg11File = new DG12File(dg11In);
 
@@ -271,7 +275,7 @@ public class ReadOcr {
 
     private void setDocumentPublic(final PassportService service, final EDocument eDocument) {
         try {
-            listener.onLoading(ReadOcrStep.ON_DG15);
+            setLoading(ReadOcrStep.ON_DG15);
             final CardFileInputStream dg15In = service.getInputStream(PassportService.EF_DG15);
             final DG15File dg15File = new DG15File(dg15In);
             final PublicKey publicKey = dg15File.getPublicKey();
@@ -279,6 +283,10 @@ public class ReadOcr {
         } catch (Exception e) {
             Log.w(TAG, e);
         }
+    }
+
+    private void setLoading(final ReadOcrStep readOcrStep) {
+        handler.post(() -> listener.onLoading(readOcrStep));
     }
 
 }
