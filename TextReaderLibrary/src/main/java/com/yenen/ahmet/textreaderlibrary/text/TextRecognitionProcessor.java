@@ -14,9 +14,10 @@ import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.TextRecognizerOptions;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import com.yenen.ahmet.textreaderlibrary.other.FrameMetadata;
 import com.yenen.ahmet.textreaderlibrary.other.GraphicOverlay;
+import com.yenen.ahmet.textreaderlibrary.ui.CameraView;
 import com.yenen.ahmet.textreaderlibrary.util.OcrHelper;
 
 import org.jmrtd.lds.icao.MRZInfo;
@@ -36,9 +37,6 @@ public class TextRecognitionProcessor {
 
     private final StringBuilder scannedTextBuffer = new StringBuilder();
 
-    private static final String TYPE_PASSPORT = "P<";
-
-    private static final String TYPE_ID_CARD = "I<";
 
     // Whether we should ignore process(). This is usually caused by feeding input data faster than
     // the model can handle.
@@ -105,9 +103,9 @@ public class TextRecognitionProcessor {
         final GraphicOverlay.Graphic textGraphic = new TextGraphic(graphicOverlay, element, Color.GREEN);
         scannedTextBuffer.append(element.getText());
         final String scannedText = scannedTextBuffer.toString();
-        if (scannedText.contains(TYPE_PASSPORT) || scannedText.contains(TYPE_ID_CARD)) {
+        if (scannedText.contains(CameraView.TYPE_PASSPORT) || scannedText.contains(CameraView.TYPE_ID_CARD)) {
             graphicOverlay.add(textGraphic);
-            final String docPrefix = scannedText.contains(TYPE_PASSPORT) ? TYPE_PASSPORT : TYPE_ID_CARD;
+            final String docPrefix = scannedText.contains(CameraView.TYPE_PASSPORT) ? CameraView.TYPE_PASSPORT : CameraView.TYPE_ID_CARD;
             final String scannedTextBuffer = scannedText.substring(scannedText.indexOf(docPrefix));
             finishScanning(scannedTextBuffer);
         }
