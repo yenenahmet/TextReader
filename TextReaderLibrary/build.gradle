@@ -16,6 +16,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        resConfigs "tr", "en", "zh-rCN", "de"
+
     }
 
     buildTypes {
@@ -66,4 +69,6 @@ dependencies {
     //Çince ve İngilizce model paketini içe aktarın.
     implementation 'com.huawei.hms:ml-computer-vision-ocr-cn-model:2.0.1.300'
     implementation 'com.huawei.hms:ml-computer-card-gcr-plugin:1.0.3.300'
+    implementation 'com.huawei.hms:ads-identifier:3.4.34.301'
+
 }
