@@ -237,9 +237,9 @@ public class CameraView extends Fragment implements TextRecognitionProcessor.Res
         this.cameraViewResult = cameraViewResult;
     }
 
-    interface CameraViewResult {
+    public interface CameraViewResult {
         void onResult(MRZInfo mrzInfo);
-
         void onError(Exception ex);
     }
+
 }
