@@ -106,16 +106,6 @@ public class CameraView extends Fragment implements TextRecognitionProcessor.Res
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        if (cameraSource != null) {
-            cameraSource.release();
-            cameraSource = null;
-        }
-        stop();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if (PlatformUtil.getPlatformType(getContext()) == PlatformUtil.GOOGLE) {
